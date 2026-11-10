@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KHIPU JURIS AI — Estación Jurídica Ultrarrápida & Auditoría Andina</title>
+
+    <!-- Preconnect for ultra-fast font & CDN loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#06080D',
+                            base: '#0B0F17',
+                            card: '#111724',
+                            border: 'rgba(245, 183, 64, 0.18)',
+                            gold: '#F5B740',
+                            cyan: '#06B6D4',
+                            emerald: '#10B981',
+                            crimson: '#F43F5E',
+                            violet: '#8B5CF6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        cinzel: ['Cinzel', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        };
+    </script>
+
+    <!-- PDF.js for instant client-side parallel PDF extraction -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #06080D;
+            color: #E2E8F0;
+            background-image:
+                radial-gradient(circle at 15% 0%, rgba(245, 183, 64, 0.09) 0%, transparent 45%),
+                radial-gradient(circle at 85% 100%, rgba(6, 182, 212, 0.08) 0%, transparent 45%),
+                linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+        }
+        .glass-panel {
+            background: rgba(14, 19, 30, 0.78);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.25);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #F5B740;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .msg-anim {
+            animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-cyber-gold selection:text-black overflow-x-hidden">
+
+    <!-- Toast Notification Container (No native alert) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ========================================================== -->
+    <!-- TOP BAR NAVIGATION                                         -->
+    <!-- ========================================================== -->
+    <header class="sticky top-0 z-30 border-b border-cyber-border bg-cyber-bg/85 backdrop-blur-xl">
+        <div class="max-w-[1600px] mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 via-cyber-gold to-yellow-200 p-[1.5px] shadow-lg shadow-amber-500/20">
+                    <div class="w-full h-full bg-cyber-bg rounded-[10px] flex items-center justify-center font-cinzel font-extrabold text-cyber-gold text-lg">
+                        ᚴ
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-cinzel font-bold text-base sm:text-lg tracking-wider text-white">
+                            KHIPU <span class="text-cyber-gold">JURIS</span> AI
+                        </h1>
+                        <span class="px-2 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                            FLASH 3 TURBO
+                        </span>
+                    </div>
+                    <p id="header-subtitle" class="text-[11px] text-slate-400 hidden sm:block">
+                        Sistema Andino de Registro Probatorio, Análisis PDF Ultrarrápido & IA Legal
+                    </p>
+                </div>
+            </div>
+
+            <!-- Controls & Switchers -->
+            <div class="flex items-center flex-wrap gap-2">
+                <!-- Case Selector -->
+                <div class="flex items-center gap-2 bg-cyber-card px-3 py-1.5 rounded-xl border border-slate-800 hover:border-cyber-gold/40 transition">
+                    <span class="text-[10px] font-mono uppercase text-cyber-gold hidden md:inline">Expediente:</span>
+                    <select id="caseSelector" class="bg-transparent text-xs font-medium text-slate-200 focus:outline-none cursor-pointer">
+                        <option value="0" class="bg-slate-900">01 • Arbitraje OSCE (Obras Viales)</option>
+                        <option value="1" class="bg-slate-900">02 • Penal Anticorrupción (Colusión)</option>
+                        <option value="2" class="bg-slate-900">03 • Propiedad Comunal & Ayllu (Civil)</option>
+                    </select>
+                </div>
+
+                <!-- Add Knot Button -->
+                <button id="btn-open-new-knot" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-cyber-gold/15 hover:bg-cyber-gold/25 text-cyber-gold border border-cyber-gold/40 transition flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Anudar Hito</span>
+                </button>
+
+                <!-- Intercultural Language Toggle -->
+                <div class="flex items-center bg-cyber-card p-0.5 rounded-xl border border-slate-800 text-[11px] font-mono">
+                    <button id="btn-lang-es" class="px-2.5 py-1 rounded-lg bg-cyber-gold text-black font-bold transition">ES</button>
+                    <button id="btn-lang-qu" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition">RUNASIMI</button>
+                </div>
+
+                <!-- Optional API Key Button -->
+                <button id="btn-api-key" class="px-3 py-1.5 rounded-xl text-xs font-mono bg-cyber-card hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-cyber-gold/50 transition flex items-center gap-1.5" title="Configurar clave API opcional">
+                    <svg class="w-3.5 h-3.5 text-cyber-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    <span id="txt-api-status" class="hidden sm:inline">Gemini Activo</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================================== -->
+    <!-- MAIN 3-COLUMN WORKSTATION                                  -->
+    <!-- ========================================================== -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+        <!-- ====================================================== -->
+        <!-- LEFT PANEL: ULTRA-FAST GEMINI 3 FLASH + PDF AUDITOR    -->
+        <!-- ====================================================== -->
+        <section class="lg:col-span-4 flex flex-col glass-panel rounded-2xl border border-cyber-border overflow-hidden h-[640px] lg:h-[calc(100vh-92px)] shadow-2xl">
+            <!-- Top Controls -->
+            <div class="p-3 border-b border-slate-800/90 bg-cyber-base/70 space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-cyber-cyan animate-pulse"></span>
+                        <span id="txt-ai-title" class="text-xs font-mono uppercase font-bold text-white tracking-wide">Kamayuq Gemini IA</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span id="latency-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-emerald-400 border border-slate-800">Listo</span>
+                        <button id="btn-clear-chat" class="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition" title="Limpiar conversación">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3-Way Mode Switcher -->
+                <div class="grid grid-cols-3 gap-1 bg-slate-950/90 p-1 rounded-xl border border-slate-800/80 text-[11px] font-medium">
+                    <button id="mode-general" data-mode="general" class="chat-mode-btn py-1.5 px-2 rounded-lg bg-cyber-gold text-black font-semibold transition truncate">
+                        ✦ Libre
+                    </button>
+                    <button id="mode-pdf" data-mode="pdf" class="chat-mode-btn py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition truncate">
+                        📄 Mi PDF
+                    </button>
+                    <button id="mode-web" data-mode="web" class="chat-mode-btn py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition truncate">
+                        🌐 Web Legal
+                    </button>
+                </div>
+
+                <!-- Instant Drag & Drop PDF Zone -->
+                <div id="pdf-dropzone" class="relative group rounded-xl border border-dashed border-slate-700 hover:border-cyber-gold bg-slate-950/60 px-3 py-2 transition flex items-center justify-between gap-2">
+                    <input type="file" id="pdf-file-input" accept="application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div id="pdf-icon-box" class="w-8 h-8 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center font-mono text-[10px] font-bold shrink-0">
+                            PDF
+                        </div>
+                        <div class="min-w-0">
+                            <p id="pdf-status-title" class="text-xs font-medium text-slate-200 truncate">Arrastra o sube un PDF aquí</p>
+                            <p id="pdf-status-subtitle" class="text-[10px] font-mono text-slate-400 truncate">Lectura paralela instantánea en memoria</p>
+                        </div>
+                    </div>
+                    <button id="btn-remove-pdf" type="button" class="hidden relative z-20 p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 transition shrink-0" title="Desvincular PDF">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <!-- Progress Bar for PDF -->
+                <div id="pdf-progress-wrap" class="hidden w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                    <div id="pdf-progress-bar" class="h-full bg-gradient-to-r from-cyber-emerald to-cyber-cyan w-0 transition-all duration-150"></div>
+                </div>
+            </div>
+
+            <!-- Chat Stream -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-3.5 space-y-3 text-xs scroll-smooth">
+                <div class="flex gap-2.5 items-start msg-anim">
+                    <div class="w-7 h-7 rounded-lg bg-cyber-gold/20 border border-cyber-gold/40 text-cyber-gold flex items-center justify-center font-cinzel font-bold shrink-0">
+                        K
+                    </div>
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl rounded-tl-sm p-3.5 text-slate-200 space-y-2 leading-relaxed max-w-[92%]">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-mono font-bold text-cyber-gold uppercase">Kamayuq Flash 3 • Activo</span>
+                        </div>
+                        <p>¡Allillanchu! Soy tu estación de inteligencia jurídica y general de alta velocidad:</p>
+                        <ul class="space-y-1 text-[11.5px] text-slate-300 list-disc pl-4">
+                            <li><strong class="text-white">Modo Libre:</strong> Pregúntame cualquier tema de derecho, código, redacción o consulta general.</li>
+                            <li><strong class="text-white">Modo Mi PDF:</strong> Sube contratos, demandas o leyes en PDF; los tejeré en el Khipu y responderé citando páginas exactas.</li>
+                            <li><strong class="text-white">Modo Web Legal:</strong> Conecta con Google Search para buscar normas y jurisprudencia reciente.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instant Action Chips -->
+            <div class="px-3 py-2 border-t border-slate-800/70 bg-cyber-base/50 flex gap-1.5 overflow-x-auto no-scrollbar">
+                <button type="button" class="quick-chip shrink-0 text-[10.5px] font-mono px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-cyber-gold/40 transition">
+                    ⚖️ Plazo apelación SINOE
+                </button>
+                <button type="button" class="quick-chip shrink-0 text-[10.5px] font-mono px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-cyber-gold/40 transition">
+                    📄 Resume y audita mi PDF
+                </button>
+                <button type="button" class="quick-chip shrink-0 text-[10.5px] font-mono px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-cyber-gold/40 transition">
+                    📝 Redacta cláusula penalidad
+                </button>
+                <button type="button" class="quick-chip shrink-0 text-[10.5px] font-mono px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-cyber-gold/40 transition">
+                    🔍 Riesgos del expediente actual
+                </button>
+            </div>
+
+            <!-- Chat Input Form with Voice Dictation -->
+            <form id="chat-form" class="p-3 border-t border-slate-800 bg-cyber-card/90 flex items-center gap-2">
+                <button type="button" id="btn-voice" class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-cyber-cyan border border-slate-800 transition shrink-0" title="Dictar por voz">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                </button>
+                <input id="chat-input" type="text" autocomplete="off" placeholder="Escribe cualquier consulta o pregunta sobre tu PDF..."
+                       class="flex-1 bg-cyber-bg border border-slate-800 focus:border-cyber-gold rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none transition">
+                <button type="submit" id="btn-submit-chat" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-cyber-gold text-black font-bold text-xs hover:brightness-110 active:scale-95 transition flex items-center gap-1.5 shrink-0 shadow-lg shadow-amber-500/20">
+                    <span>Enviar</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </form>
+        </section>
+
+        <!-- ====================================================== -->
+        <!-- CENTER PANEL: HIGH-FPS INTERACTIVE KHIPU CANVAS        -->
+        <!-- ====================================================== -->
+        <section class="lg:col-span-5 flex flex-col glass-panel rounded-2xl border border-cyber-border overflow-hidden h-[560px] lg:h-[calc(100vh-92px)] shadow-2xl">
+            <!-- Canvas Header -->
+            <div class="p-3.5 border-b border-slate-800/90 bg-cyber-base/70 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-mono uppercase tracking-wider text-cyber-gold">Arquitectura Visual del Caso</span>
+                        <span id="badge-expediente" class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/25">EXP. 04521-2024</span>
+                    </div>
+                    <h2 id="case-main-title" class="text-sm font-bold text-white font-cinzel mt-0.5 truncate max-w-md">
+                        Arbitraje OSCE: Consorcio Vial vs. MTC
+                    </h2>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                    <button id="btn-toggle-breeze" class="px-2.5 py-1.5 rounded-lg text-[11px] font-mono bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition flex items-center gap-1.5">
+                        <span id="breeze-dot" class="w-2 h-2 rounded-full bg-cyber-gold"></span>
+                        <span id="txt-breeze-status">Física ON</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI Mini Strip -->
+            <div class="grid grid-cols-3 divide-x divide-slate-800/80 border-b border-slate-800/80 bg-slate-950/60 text-center py-2 text-[11px]">
+                <div>
+                    <span class="text-slate-500 font-mono text-[10px] block">CUERDAS</span>
+                    <span id="kpi-cords" class="font-bold text-white font-mono">3</span>
+                </div>
+                <div>
+                    <span class="text-slate-500 font-mono text-[10px] block">NUDOS / HITOS</span>
+                    <span id="kpi-knots" class="font-bold text-cyber-gold font-mono">5</span>
+                </div>
+                <div>
+                    <span class="text-slate-500 font-mono text-[10px] block">ALERTAS CRÍTICAS</span>
+                    <span id="kpi-critical" class="font-bold text-rose-400 font-mono">1</span>
+                </div>
+            </div>
+
+            <!-- Interactive Canvas Viewport -->
+            <div id="canvas-wrapper" class="relative flex-1 bg-cyber-bg/80 overflow-hidden select-none">
+                <canvas id="khipuCanvas" class="w-full h-full block"></canvas>
+
+                <!-- Floating Hover Tooltip on Canvas -->
+                <div id="canvas-tooltip" class="hidden absolute pointer-events-none z-20 bg-slate-950/95 border border-cyber-gold/50 rounded-xl px-3 py-2 shadow-2xl backdrop-blur-md text-[11px] max-w-[230px]">
+                    <div class="flex items-center justify-between gap-2 mb-0.5">
+                        <span id="tt-id" class="font-mono text-[10px] font-bold text-cyber-gold">K-101</span>
+                        <span id="tt-status" class="font-mono text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">ADMITIDO</span>
+                    </div>
+                    <p id="tt-title" class="font-semibold text-white leading-snug"></p>
+                    <p id="tt-date" class="text-[10px] font-mono text-slate-400 mt-0.5"></p>
+                </div>
+
+                <!-- Legend Footer Overlay -->
+                <div class="absolute bottom-3 inset-x-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+                    <div class="bg-slate-950/85 backdrop-blur border border-slate-800 rounded-xl px-3 py-1.5 text-[10px] font-mono text-slate-300 flex items-center gap-3">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-cyber-gold"></span>Principal</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-cyber-crimson"></span>Plazo Fatal</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-cyber-emerald"></span>PDF Anudado</span>
+                    </div>
+                    <div class="bg-slate-950/85 backdrop-blur border border-slate-800 rounded-xl px-2.5 py-1.5 text-[10px] font-mono text-slate-400">
+                        Clic en cualquier nudo para auditar
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ====================================================== -->
+        <!-- RIGHT PANEL: KHIPUKAMAYUQ INSPECTOR & AI WRIT DRAFTER  -->
+        <!-- ====================================================== -->
+        <section class="lg:col-span-3 flex flex-col glass-panel rounded-2xl border border-cyber-border overflow-hidden h-[620px] lg:h-[calc(100vh-92px)] shadow-2xl">
+            <div class="p-3.5 border-b border-slate-800/90 bg-cyber-base/70 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] uppercase font-mono text-cyber-gold">Auditoría Procesal</span>
+                    <h3 class="text-sm font-bold text-white font-cinzel">Inspector de Nudos</h3>
+                </div>
+                <button id="btn-audit-knot-ai" class="px-2.5 py-1 rounded-lg bg-cyber-cyan/15 hover:bg-cyber-cyan/25 text-cyber-cyan border border-cyber-cyan/30 text-[10.5px] font-mono transition" title="Analizar este nudo con Gemini">
+                    ⚡ Analizar con IA
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-3.5 space-y-4">
+                <!-- Active Knot Inspector -->
+                <div id="knot-inspector" class="p-3.5 rounded-2xl bg-cyber-card/90 border border-slate-800 space-y-3"></div>
+
+                <!-- Cord List Navigator -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] uppercase font-mono text-slate-400 font-semibold">Cuerdas del Expediente</span>
+                    </div>
+                    <div id="cord-summary-list" class="space-y-1.5"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ========================================================== -->
+    <!-- MODAL 1: AI LEGAL DRAFT GENERATOR                          -->
+    <!-- ========================================================== -->
+    <div id="draft-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-2xl rounded-2xl border border-cyber-gold/60 p-5 sm:p-6 relative shadow-2xl">
+            <button id="btn-close-draft-modal" class="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-900 text-slate-400 hover:text-white transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <div class="border-b border-slate-800 pb-3 mb-4 pr-8">
+                <span class="text-[10px] font-mono uppercase text-cyber-gold">Automatización Procesal Peruana</span>
+                <h3 id="draft-modal-title" class="text-base font-bold text-white font-cinzel mt-0.5">Borrador de Escrito</h3>
+            </div>
+
+            <textarea id="draft-content" rows="13" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyber-gold resize-none leading-relaxed"></textarea>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 mt-4">
+                <button id="btn-ai-expand-draft" class="px-3.5 py-2 rounded-xl bg-cyber-cyan/15 hover:bg-cyber-cyan/25 text-cyber-cyan border border-cyber-cyan/40 text-xs font-mono font-semibold transition flex items-center gap-1.5">
+                    <span>✨ Redactar Escrito Completo con Gemini Flash</span>
+                </button>
+                <button id="btn-copy-draft" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-cyber-gold text-black font-bold rounded-xl text-xs font-mono hover:brightness-110 transition flex items-center gap-1.5">
+                    <span>Copiar al Portapapeles</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- MODAL 2: ADD NEW KNOT / PROCEDURAL MILESTONE               -->
+    <!-- ========================================================== -->
+    <div id="new-knot-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-md rounded-2xl border border-cyber-gold/60 p-5 sm:p-6 relative shadow-2xl">
+            <button id="btn-close-knot-modal" class="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-900 text-slate-400 hover:text-white transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <div class="border-b border-slate-800 pb-3 mb-4">
+                <span class="text-[10px] font-mono uppercase text-cyber-gold">Registro Inmutable</span>
+                <h3 class="text-base font-bold text-white font-cinzel">Anudar Nuevo Hito Procesal</h3>
+            </div>
+
+            <form id="form-new-knot" class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-300 font-mono text-[11px] mb-1">Cuerda Destino</label>
+                    <select id="nk-cord" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyber-gold"></select>
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-mono text-[11px] mb-1">Título del Acto / Resolución</label>
+                    <input id="nk-title" type="text" required placeholder="Ej. Recurso de Reconsideración" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyber-gold">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-300 font-mono text-[11px] mb-1">Base Legal (Art.)</label>
+                        <input id="nk-art" type="text" placeholder="Art. 219 TUO LPAG" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyber-gold">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-mono text-[11px] mb-1">Plazo Restante (Días)</label>
+                        <input id="nk-days" type="number" min="0" max="365" placeholder="Opcional (ej. 3)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyber-gold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-mono text-[11px] mb-1">Síntesis / Sustento</label>
+                    <textarea id="nk-summary" rows="3" required placeholder="Resumen probatorio del hito..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyber-gold resize-none"></textarea>
+                </div>
+                <label class="flex items-center gap-2 pt-1 cursor-pointer">
+                    <input id="nk-critical" type="checkbox" class="rounded accent-rose-500">
+                    <span class="text-rose-400 font-mono text-[11px]">Marcar como Nudo Crítico / Plazo Fatal</span>
+                </label>
+
+                <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-cyber-gold text-black font-bold font-mono mt-2 hover:brightness-110 transition">
+                    Tejer Nudo en el Khipu
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- MODAL 3: OPTIONAL CUSTOM API KEY                           -->
+    <!-- ========================================================== -->
+    <div id="api-key-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-md rounded-2xl border border-cyber-gold/60 p-6 relative shadow-2xl">
+            <button id="btn-close-api-modal" class="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-900 text-slate-400 hover:text-white transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <div class="border-b border-slate-800 pb-3 mb-4">
+                <span class="text-[10px] font-mono uppercase text-cyber-gold">Motor Gemini 3 Flash</span>
+                <h3 class="text-base font-bold text-white font-cinzel">Configuración de API Key</h3>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                En este entorno la IA funciona de inmediato automáticamente. Si deseas exportarlo a tu propio servidor externo, puedes pegar tu clave de Google AI Studio aquí:
+            </p>
+            <input type="password" id="custom-api-key-input" placeholder="AIzaSy... (Dejar vacío para usar clave integrada)"
+                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono placeholder-slate-600 focus:outline-none focus:border-cyber-gold mb-4">
+            <div class="flex justify-end gap-2">
+                <button id="btn-save-api-key" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-cyber-gold text-black font-bold rounded-xl text-xs font-mono hover:brightness-110 transition">
+                    Guardar Preferencia
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- APPLICATION ENGINE                                         -->
+    <!-- ========================================================== -->
+    <script>
+        // ============================================================
+        // 1. STATE & LEGAL KHIPU REPOSITORY
+        // ============================================================
+        const GEMINI_MODEL = "gemini-3-flash-preview";
+        const apiKey = ""; // Canvas runtime injects key automatically when empty
+        let customApiKey = "";
+        try { customApiKey = localStorage.getItem('khipu_custom_key') || ""; } catch (_) {}
+
+        let currentLang = 'es';
+        let currentCaseIndex = 0;
+        let selectedKnot = { cordIdx: 0, knotIdx: 0 };
+        let hoveredKnot = null;
+        let breezeActive = true;
+        let timeTick = 0;
+        let activeChatMode = 'general'; // 'general' | 'pdf' | 'web'
+        let activePdfContext = null; // { filename, text, pageCount, sizeStr }
+        let chatHistoryMemory = []; // Keeps lightweight multi-turn context for speed & coherence
+
+        const CASES_DATA = [
+            {
+                id: "case-01",
+                expediente: "EXP. 04521-2024-OSCE",
+                title: "Arbitraje OSCE: Consorcio Vial Tawantinsuyo vs. MTC",
+                cords: [
+                    {
+                        name: "Cuaderno Principal",
+                        name_qu: "Uma Khipu (Mañakuy)",
+                        color: "#F5B740",
+                        knots: [
+                            {
+                                id: "K-101",
+                                title: "Demanda Arbitral por Ampliación de Plazo N° 04",
+                                title_qu: "Pacha yapay mañakuy qillqa",
+                                date: "15 Ene 2026",
+                                status: "ADMITIDO",
+                                daysRemaining: null,
+                                critical: false,
+                                articles: ["Art. 45 Ley 30225", "Art. 198 RLCE"],
+                                summary: "Reclamo de 45 días calendario y mayores gastos generales acreditados en asientos del cuaderno de obra digital.",
+                                vulnerability: "Requisito de procedibilidad cumplido dentro de los 30 días hábiles de caducidad.",
+                                draftSnippet: "SUMILLA: INTERPONGO DEMANDA ARBITRAL\n\nSEÑOR PRESIDENTE DEL TRIBUNAL ARBITRAL:\nCONSORCIO VIAL TAWANTINSUYO, debidamente representado, en los seguidos con el PROYECTO ESPECIAL DEL MTC; respetuosamente decimos:\n\nI. PETITORIO:\nSolicitamos se declare FUNDADA la ampliación de plazo N° 04 por 45 días calendario más el pago de S/ 1,480,000.00 por mayores gastos generales variables..."
+                            },
+                            {
+                                id: "K-102",
+                                title: "Notificación Electrónica SINOE de Admisión",
+                                title_qu: "SINOE chaski willakuy",
+                                date: "02 Feb 2026",
+                                status: "VALIDADO",
+                                daysRemaining: null,
+                                critical: false,
+                                articles: ["Art. 155-E LOPJ", "STC 03324-2021-PA/TC"],
+                                summary: "Depósito en casilla electrónica verificado. El plazo procesal inicia al segundo día hábil siguiente de la notificación.",
+                                vulnerability: "Sin vicios de notificación. Constancia firmada digitalmente.",
+                                draftSnippet: "SUMILLA: TÉNGASE PRESENTE FECHA CIERTA DE NOTIFICACIÓN SINOE\n\nConforme al Art. 155-E de la LOPJ y doctrina jurisprudencial vinculante del Tribunal Constitucional..."
+                            },
+                            {
+                                id: "K-103",
+                                title: "Absolución de Excepción de Caducidad",
+                                title_qu: "Hark'ay kutichiy (Utqaylla)",
+                                date: "Vence pronto",
+                                status: "PLAZO FATAL",
+                                daysRemaining: 2,
+                                critical: true,
+                                articles: ["Art. 45.2 LCE", "Art. 446 CPC"],
+                                summary: "Procuraduría del MTC deduce caducidad alegando extemporaneidad respecto a resolución denegatoria.",
+                                vulnerability: "URGENTE: Quedan 2 días hábiles para presentar escrito de absolución adjuntando cargo electrónico.",
+                                draftSnippet: "SUMILLA: ABSUELVO TRASLADO DE EXCEPCIÓN DE CADUCIDAD\n\nSEÑOR PRESIDENTE DEL TRIBUNAL ARBITRAL:\nDentro del plazo normativo conferido, absolvemos la excepción deducida por la Procuraduría Pública solicitando se declare INFUNDADA en mérito a los siguientes fundamentos..."
+                            }
+                        ]
+                    },
+                    {
+                        name: "Liquidación & Pericia",
+                        name_qu: "Qullqi Yupay Khipu",
+                        color: "#F43F5E",
+                        knots: [
+                            {
+                                id: "K-201",
+                                title: "Peritaje Técnico-Contable de Gastos Generales",
+                                title_qu: "Qullqi taripay yupay",
+                                date: "24 Mar 2026",
+                                status: "EN AUDITORÍA",
+                                daysRemaining: 6,
+                                critical: false,
+                                articles: ["Art. 199 RLCE", "Art. 262 CPC"],
+                                summary: "Cuantificación financiera de maquinaria paralizada e índice unificado de precios INEI.",
+                                vulnerability: "Contrastar facturas y planillas electrónicas con asientos del residente de obra.",
+                                draftSnippet: "SUMILLA: OFREZCO DICTAMEN PERICIAL DE PARTE\n\nAdjuntamos informe pericial suscrito por Ingeniero Civil y Contador Público Colegiado..."
+                            }
+                        ]
+                    },
+                    {
+                        name: "Medida Cautelar",
+                        name_qu: "Fianza Hark'ay",
+                        color: "#06B6D4",
+                        knots: [
+                            {
+                                id: "K-301",
+                                title: "No Ejecución de Carta Fianza de Fiel Cumplimiento",
+                                title_qu: "Qullqi garantía amachay",
+                                date: "10 Abr 2026",
+                                status: "VIGENTE",
+                                daysRemaining: null,
+                                critical: false,
+                                articles: ["Art. 608 CPC", "Art. 149 RLCE"],
+                                summary: "Orden judicial que suspende cualquier requerimiento de ejecución sobre la Carta Fianza por S/ 3.2M.",
+                                vulnerability: "Mantener renovación periódica de la carta fianza hasta el laudo final.",
+                                draftSnippet: "SUMILLA: ACREDITO RENOVACIÓN DE CARTA FIANZA BANCARIA\n\nCumplimos con poner a conocimiento del Tribunal la renovación vigente de la garantía..."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "case-02",
+                expediente: "EXP. 00892-2026-JR-PE",
+                title: "Fiscalía Anticorrupción: Caso Licitación Maquinaria Regional",
+                cords: [
+                    {
+                        name: "Investigación Preparatoria",
+                        name_qu: "Taripay Qallariy",
+                        color: "#8B5CF6",
+                        knots: [
+                            {
+                                id: "K-401",
+                                title: "Disposición de Formalización Compleja",
+                                title_qu: "Hatun taripay qillqa",
+                                date: "12 Ago 2026",
+                                status: "EN CURSO",
+                                daysRemaining: 18,
+                                critical: false,
+                                articles: ["Art. 336 CPP", "Art. 384 CP (Colusión)"],
+                                summary: "Imputación contra comité de selección por presunta concertación en especificaciones técnicas de maquinaria.",
+                                vulnerability: "Solicitar tutela de derechos por falta de imputación necesaria individualizada.",
+                                draftSnippet: "SUMILLA: SOLICITO TUTELA DE DERECHOS POR DEFECTO DE IMPUTACIÓN NECESARIA\n\nSEÑOR JUEZ DE LA INVESTIGACIÓN PREPARATORIA:\nAl amparo del Art. 71.4 del Código Procesal Penal y Acuerdo Plenario N° 02-2012/CJ-116..."
+                            },
+                            {
+                                id: "K-402",
+                                title: "Oposición a Requerimiento de Prisión Preventiva",
+                                title_qu: "Wichq'ay hark'ay",
+                                date: "Audiencia Mañana",
+                                status: "CRÍTICO",
+                                daysRemaining: 1,
+                                critical: true,
+                                articles: ["Art. 268 CPP", "Casación 626-2013-Moquegua"],
+                                summary: "Acreditación de arraigo domiciliario, familiar y laboral de calidad para desvirtuar peligro de fuga.",
+                                vulnerability: "URGENTE: Incorporar certificados domiciliarios, contratos vigentes y partidas registrales antes de audiencia.",
+                                draftSnippet: "SUMILLA: PRESENTO ELEMENTOS DE CONVICCIÓN DE ARRAIGO CALIFICADO\n\nSEÑOR JUEZ PENAL:\nA fin de contradecir el supuesto peligro procesal, adjunto documental fehaciente..."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "case-03",
+                expediente: "ACTA-AYLLU-2026-CUS",
+                title: "Saneamiento y Defensa de Tierras Comunales (Derecho Agrario & Consuetudinario)",
+                cords: [
+                    {
+                        name: "Título & Linderos Ancestrales",
+                        name_qu: "Ayllu Allpa Saywa",
+                        color: "#10B981",
+                        knots: [
+                            {
+                                id: "K-501",
+                                title: "Inscripción de Memoria Descriptiva y Mojones",
+                                title_qu: "Allpa saywa qillqachay",
+                                date: "03 Oct 2026",
+                                status: "INSCRITO",
+                                daysRemaining: null,
+                                critical: false,
+                                articles: ["Art. 89 Constitución", "Ley 24656 Comunidades Campesinas", "Convenio 169 OIT"],
+                                summary: "Reconocimiento imprescriptible e inembargable del territorio comunal con coordenadas UTM georreferenciadas.",
+                                vulnerability: "Protección constitucional plena frente a superposiciones de terceros.",
+                                draftSnippet: "SUMILLA: OPOSICIÓN REGISTRAL POR IMPRESCRIPTIBILIDAD DE TERRITORIO COMUNAL\n\nSEÑOR REGISTRADOR PÚBLICO DE PREDIOS DE SUNARP:\nEn representación de la Comunidad Campesina, al amparo del Art. 89 de la Constitución Política del Perú..."
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // ============================================================
+        // 2. TOAST NOTIFICATION HELPER
+        // ============================================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const colors = {
+                info: 'border-cyber-gold/50 text-amber-200 bg-slate-950/95',
+                success: 'border-emerald-500/50 text-emerald-300 bg-slate-950/95',
+                error: 'border-rose-500/50 text-rose-300 bg-slate-950/95'
+            };
+            const el = document.createElement('div');
+            el.className = `px-4 py-2.5 rounded-xl border text-xs font-mono shadow-xl backdrop-blur-md msg-anim ${colors[type] || colors.info}`;
+            el.textContent = message;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.style.opacity = '0';
+                el.style.transition = 'opacity 0.25s ease';
+                setTimeout(() => el.remove(), 260);
+            }, 3000);
+        }
+
+        // ============================================================
+        // 3. HIGH-PERFORMANCE CANVAS ENGINE
+        // ============================================================
+        let canvas, ctx, canvasWidth = 0, canvasHeight = 0;
+
+        function initCanvas() {
+            canvas = document.getElementById('khipuCanvas');
+            if (!canvas) return;
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+
+            canvas.addEventListener('mousemove', handleCanvasHover);
+            canvas.addEventListener('mouseleave', () => {
+                hoveredKnot = null;
+                document.getElementById('canvas-tooltip').classList.add('hidden');
+                if (!breezeActive) requestAnimationFrame(renderKhipuFrame);
+            });
+            canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('touchstart', (e) => {
+                if (!e.touches.length) return;
+                const rect = canvas.getBoundingClientRect();
+                const hit = findKnotAt(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+                if (hit) selectKnot(hit.cordIdx, hit.knotIdx);
+            }, { passive: true });
+        }
+
+        function resizeCanvas() {
+            if (!canvas || !ctx) return;
+            const rect = canvas.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvasWidth = rect.width;
+            canvasHeight = rect.height;
+            canvas.width = canvasWidth * dpr;
+            canvas.height = canvasHeight * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            renderKhipuFrame();
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function findKnotAt(mx, my) {
+            const activeCase = CASES_DATA[currentCaseIndex];
+            if (!activeCase) return null;
+            for (let c = 0; c < activeCase.cords.length; c++) {
+                const knots = activeCase.cords[c].knots;
+                for (let k = 0; k < knots.length; k++) {
+                    const kn = knots[k];
+                    if (kn._x !== undefined && Math.hypot(mx - kn._x, my - kn._y) < 20) {
+                        return { cordIdx: c, knotIdx: k, knot: kn, cord: activeCase.cords[c] };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function handleCanvasHover(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            const hit = findKnotAt(mx, my);
+            const tt = document.getElementById('canvas-tooltip');
+
+            if (hit) {
+                canvas.style.cursor = 'pointer';
+                hoveredKnot = { cordIdx: hit.cordIdx, knotIdx: hit.knotIdx };
+                document.getElementById('tt-id').textContent = hit.knot.id;
+                document.getElementById('tt-status').textContent = hit.knot.status;
+                document.getElementById('tt-title').textContent = currentLang === 'qu' && hit.knot.title_qu ? hit.knot.title_qu : hit.knot.title;
+                document.getElementById('tt-date').textContent = hit.knot.date;
+                tt.classList.remove('hidden');
+                tt.style.left = `${Math.min(mx + 16, canvasWidth - 235)}px`;
+                tt.style.top = `${Math.max(12, my - 20)}px`;
+            } else {
+                canvas.style.cursor = 'default';
+                hoveredKnot = null;
+                tt.classList.add('hidden');
+            }
+            if (!breezeActive) requestAnimationFrame(renderKhipuFrame);
+        }
+
+        function handleCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const hit = findKnotAt(e.clientX - rect.left, e.clientY - rect.top);
+            if (hit) selectKnot(hit.cordIdx, hit.knotIdx);
+        }
+
+        function renderKhipuFrame() {
+            if (!ctx || canvasWidth === 0) return;
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+            const activeCase = CASES_DATA[currentCaseIndex];
+            if (!activeCase) return;
+
+            const mainY = 48;
+            const padX = 38;
+
+            // Subtle decimal horizon lines
+            ctx.strokeStyle = "rgba(255,255,255,0.03)";
+            ctx.lineWidth = 1;
+            for (let lvl = 1; lvl <= 4; lvl++) {
+                const ly = mainY + lvl * ((canvasHeight - 130) / 4.2);
+                ctx.beginPath();
+                ctx.moveTo(padX, ly);
+                ctx.lineTo(canvasWidth - padX, ly);
+                ctx.stroke();
+            }
+
+            // Master Primary Cord (Uma Khipu)
+            const grad = ctx.createLinearGradient(0, mainY - 6, 0, mainY + 6);
+            grad.addColorStop(0, "#78531E");
+            grad.addColorStop(0.5, "#F5B740");
+            grad.addColorStop(1, "#452D0C");
+
+            ctx.beginPath();
+            ctx.moveTo(padX, mainY);
+            ctx.lineTo(canvasWidth - padX, mainY);
+            ctx.lineWidth = 10;
+            ctx.lineCap = "round";
+            ctx.strokeStyle = grad;
+            ctx.stroke();
+
+            // Braided Diagonal Texture
+            ctx.strokeStyle = "rgba(255,255,255,0.22)";
+            ctx.lineWidth = 1.6;
+            for (let x = padX + 6; x < canvasWidth - padX - 6; x += 12) {
+                ctx.beginPath();
+                ctx.moveTo(x - 3, mainY - 4);
+                ctx.lineTo(x + 3, mainY + 4);
+                ctx.stroke();
+            }
+
+            // Pendant Cords
+            const cords = activeCase.cords;
+            const count = cords.length;
+            const maxSpan = canvasWidth - 130;
+            const spacing = count > 1 ? Math.min(135, maxSpan / (count - 1)) : 0;
+            const startX = count > 1 ? (canvasWidth - spacing * (count - 1)) / 2 : canvasWidth / 2;
+            const cordLen = Math.min(340, canvasHeight - 115);
+
+            cords.forEach((cord, cIdx) => {
+                const bx = startX + cIdx * spacing;
+                const sway = breezeActive ? Math.sin(timeTick + cIdx * 0.7) * 6.5 : 0;
+                const ex = bx + sway;
+                const ey = mainY + cordLen;
+                const cpx = bx + sway * 0.35;
+                const cpy = mainY + cordLen * 0.52;
+
+                // Top Loop Knot
+                ctx.beginPath();
+                ctx.arc(bx, mainY + 1, 6, 0, Math.PI * 2);
+                ctx.fillStyle = cord.color;
+                ctx.fill();
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = "#06080D";
+                ctx.stroke();
+
+                // Cord body
+                ctx.beginPath();
+                ctx.moveTo(bx, mainY + 4);
+                ctx.quadraticCurveTo(cpx, cpy, ex, ey);
+                ctx.lineWidth = 3.2;
+                ctx.strokeStyle = cord.color;
+                ctx.stroke();
+
+                // Tassel fringe
+                ctx.beginPath();
+                ctx.moveTo(ex, ey);
+                ctx.lineTo(ex - 4, ey + 13);
+                ctx.moveTo(ex, ey);
+                ctx.lineTo(ex + 4, ey + 13);
+                ctx.lineWidth = 1.8;
+                ctx.strokeStyle = cord.color;
+                ctx.stroke();
+
+                // Cord Label
+                ctx.font = "600 10px 'JetBrains Mono'";
+                ctx.fillStyle = cord.color;
+                ctx.textAlign = "center";
+                const lbl = (currentLang === 'qu' && cord.name_qu ? cord.name_qu : cord.name);
+                ctx.fillText(lbl.length > 17 ? lbl.slice(0, 16) + "…" : lbl, ex, ey + 27);
+
+                // Knots along cord
+                const kTotal = cord.knots.length;
+                cord.knots.forEach((knot, kIdx) => {
+                    const t = kTotal === 1 ? 0.42 : 0.22 + (kIdx * (0.64 / Math.max(1, kTotal - 1)));
+                    const ky = mainY + cordLen * t;
+                    const kx = (1 - t) * (1 - t) * bx + 2 * (1 - t) * t * cpx + t * t * ex;
+                    knot._x = kx;
+                    knot._y = ky;
+
+                    const isSel = selectedKnot && selectedKnot.cordIdx === cIdx && selectedKnot.knotIdx === kIdx;
+                    const isHov = hoveredKnot && hoveredKnot.cordIdx === cIdx && hoveredKnot.knotIdx === kIdx;
+
+                    ctx.save();
+                    if (isSel || isHov) {
+                        ctx.shadowColor = knot.critical ? "#F43F5E" : cord.color;
+                        ctx.shadowBlur = 16;
+                    }
+
+                    // Critical pulse ring
+                    if (knot.critical) {
+                        const pulseR = 13 + Math.sin(timeTick * 2.5) * 2.5;
+                        ctx.beginPath();
+                        ctx.arc(kx, ky, pulseR, 0, Math.PI * 2);
+                        ctx.strokeStyle = "rgba(244, 63, 94, 0.45)";
+                        ctx.lineWidth = 1.8;
+                        ctx.stroke();
+                    }
+
+                    // Knot body (stylized Andean woven torus)
+                    const radius = isSel ? 10.5 : (isHov ? 9.5 : 7.8);
+                    ctx.beginPath();
+                    ctx.arc(kx, ky, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = knot.critical ? "#F43F5E" : cord.color;
+                    ctx.fill();
+                    ctx.lineWidth = isSel ? 2.5 : 1.5;
+                    ctx.strokeStyle = isSel ? "#FFFFFF" : "#06080D";
+                    ctx.stroke();
+
+                    // Inner weave dot
+                    ctx.beginPath();
+                    ctx.arc(kx, ky, isSel ? 3.8 : 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fill();
+                    ctx.restore();
+                });
+            });
+        }
+
+        function animationLoop() {
+            if (breezeActive) {
+                timeTick += 0.038;
+                renderKhipuFrame();
+            }
+            requestAnimationFrame(animationLoop);
+        }
+
+        // ============================================================
+        // 4. UI SYNCHRONIZATION & INSPECTOR
+        // ============================================================
+        function selectKnot(cordIdx, knotIdx) {
+            selectedKnot = { cordIdx, knotIdx };
+            updateInspectorUI();
+            updateCordListUI();
+            if (!breezeActive) renderKhipuFrame();
+        }
+
+        function refreshCaseDashboard() {
+            const activeCase = CASES_DATA[currentCaseIndex];
+            document.getElementById('badge-expediente').textContent = activeCase.expediente;
+            document.getElementById('case-main-title').textContent = activeCase.title;
+
+            let totalKnots = 0;
+            let totalCritical = 0;
+            activeCase.cords.forEach(c => {
+                totalKnots += c.knots.length;
+                c.knots.forEach(k => { if (k.critical) totalCritical++; });
+            });
+
+            document.getElementById('kpi-cords').textContent = activeCase.cords.length;
+            document.getElementById('kpi-knots').textContent = totalKnots;
+            document.getElementById('kpi-critical').textContent = totalCritical;
+
+            if (
+                !activeCase.cords[selectedKnot.cordIdx] ||
+                !activeCase.cords[selectedKnot.cordIdx].knots[selectedKnot.knotIdx]
+            ) {
+                selectedKnot = { cordIdx: 0, knotIdx: 0 };
+            }
+
+            updateInspectorUI();
+            updateCordListUI();
+            renderKhipuFrame();
+        }
+
+        function updateCordListUI() {
+            const activeCase = CASES_DATA[currentCaseIndex];
+            const listEl = document.getElementById('cord-summary-list');
+            listEl.innerHTML = '';
+
+            activeCase.cords.forEach((cord, cIdx) => {
+                const isCurrentCord = selectedKnot && selectedKnot.cordIdx === cIdx;
+                const name = currentLang === 'qu' && cord.name_qu ? cord.name_qu : cord.name;
+                const card = document.createElement('div');
+                card.className = `p-2.5 rounded-xl border transition cursor-pointer ${
+                    isCurrentCord
+                        ? 'bg-slate-900 border-cyber-gold/50'
+                        : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'
+                }`;
+
+                const knotPills = cord.knots.map((k, kIdx) => {
+                    const activePill = isCurrentCord && selectedKnot.knotIdx === kIdx;
+                    return `<button type="button" data-c="${cIdx}" data-k="${kIdx}" class="knot-jump-btn px-2 py-0.5 rounded text-[10px] font-mono transition ${
+                        activePill
+                            ? 'bg-cyber-gold text-black font-bold'
+                            : (k.critical ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-slate-800 text-slate-300 hover:bg-slate-700')
+                    }">${k.id}</button>`;
+                }).join('');
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between text-xs mb-1.5">
+                        <span class="font-semibold flex items-center gap-1.5 truncate" style="color:${cord.color}">
+                            <span class="w-2 h-2 rounded-full shrink-0" style="background:${cord.color}"></span>
+                            <span class="truncate">${name}</span>
+                        </span>
+                        <span class="text-[10px] font-mono text-slate-500">${cord.knots.length} nudo(s)</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1">${knotPills}</div>
+                `;
+
+                card.addEventListener('click', (e) => {
+                    const btn = e.target.closest('.knot-jump-btn');
+                    if (btn) {
+                        selectKnot(parseInt(btn.dataset.c, 10), parseInt(btn.dataset.k, 10));
+                    } else {
+                        selectKnot(cIdx, 0);
+                    }
+                });
+                listEl.appendChild(card);
+            });
+        }
+
+        function updateInspectorUI() {
+            const activeCase = CASES_DATA[currentCaseIndex];
+            const cord = activeCase.cords[selectedKnot.cordIdx];
+            const knot = cord && cord.knots[selectedKnot.knotIdx];
+            const box = document.getElementById('knot-inspector');
+
+            if (!knot) {
+                box.innerHTML = `<p class="text-xs text-slate-500 font-mono text-center py-6">Selecciona un nudo para inspeccionar.</p>`;
+                return;
+            }
+
+            const title = currentLang === 'qu' && knot.title_qu ? knot.title_qu : knot.title;
+
+            box.innerHTML = `
+                <div class="space-y-3 text-xs">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-800 font-mono">
+                        <span class="text-cyber-gold font-bold">${knot.id}</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                            knot.critical
+                                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                                : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                        }">${knot.status}</span>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-white leading-snug">${title}</h4>
+                        <p class="text-[10.5px] font-mono text-slate-400 mt-0.5">Registro: ${knot.date}</p>
+                    </div>
+
+                    ${knot.daysRemaining !== null ? `
+                        <div class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[11px] font-mono flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping shrink-0"></span>
+                            <span><strong>VENCIMIENTO:</strong> Quedan ${knot.daysRemaining} día(s) hábil(es).</span>
+                        </div>
+                    ` : ''}
+
+                    <div>
+                        <span class="text-[10px] font-mono uppercase text-slate-400 block mb-1">Base Normativa</span>
+                        <div class="flex flex-wrap gap-1">
+                            ${knot.articles.map(a => `<span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-700/80 font-mono text-[10px] text-amber-300">${a}</span>`).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-[10px] font-mono uppercase text-slate-400 block mb-0.5">Sustento Probatorio</span>
+                        <p class="text-slate-300 leading-relaxed text-[11.5px]">${knot.summary}</p>
+                    </div>
+
+                    <div class="p-2.5 rounded-xl bg-slate-950/90 border border-slate-800/90">
+                        <span class="text-[10px] font-mono font-bold text-cyber-gold uppercase block">Dictamen Kamayuq:</span>
+                        <p class="text-slate-300 text-[11px] mt-0.5 leading-relaxed">${knot.vulnerability}</p>
+                    </div>
+
+                    <button id="btn-open-draft" type="button" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-cyber-gold text-black font-bold font-mono text-xs hover:brightness-110 active:scale-[0.99] transition shadow-lg shadow-amber-500/15 flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <span>Generar Escrito Procesal</span>
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('btn-open-draft').addEventListener('click', () => openDraftModal(knot));
+        }
+
+        // ============================================================
+        // 5. PARALLEL ULTRA-FAST PDF EXTRACTION & KHIPU WEAVING
+        // ============================================================
+        async function processPdfFile(file) {
+            if (!file || file.type !== 'application/pdf') {
+                showToast('Selecciona un archivo PDF válido.', 'error');
+                return;
+            }
+
+            const titleEl = document.getElementById('pdf-status-title');
+            const subEl = document.getElementById('pdf-status-subtitle');
+            const progWrap = document.getElementById('pdf-progress-wrap');
+            const progBar = document.getElementById('pdf-progress-bar');
+
+            const t0 = performance.now();
+            titleEl.textContent = `Leyendo ${file.name}...`;
+            subEl.textContent = 'Extracción paralela ultrarrápida...';
+            progWrap.classList.remove('hidden');
+            progBar.style.width = '20%';
+
+            try {
+                const buffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+                const totalPages = pdf.numPages;
+                progBar.style.width = '55%';
+
+                // Extract pages concurrently in batches for maximum speed!
+                const pagePromises = [];
+                for (let p = 1; p <= totalPages; p++) {
+                    pagePromises.push(
+                        pdf.getPage(p).then(async (page) => {
+                            const content = await page.getTextContent();
+                            const text = content.items.map(it => it.str).join(' ');
+                            return `\n[PÁGINA ${p}]\n${text}`;
+                        })
+                    );
+                }
+
+                const pagesArray = await Promise.all(pagePromises);
+                const fullText = pagesArray.join('\n');
+                const elapsedMs = Math.round(performance.now() - t0);
+                const sizeStr = (file.size / 1024).toFixed(1) + ' KB';
+
+                progBar.style.width = '100%';
+                setTimeout(() => progWrap.classList.add('hidden'), 350);
+
+                activePdfContext = {
+                    filename: file.name,
+                    text: fullText,
+                    pageCount: totalPages,
+                    sizeStr
+                };
+
+                titleEl.textContent = file.name;
+                subEl.textContent = `${totalPages} pág. • ${sizeStr} • Leído en ${elapsedMs}ms`;
+                document.getElementById('btn-remove-pdf').classList.remove('hidden');
+
+                // Switch to PDF mode automatically
+                setChatMode('pdf');
+                weavePdfCordIntoCase(file.name, totalPages, fullText);
+                showToast(`PDF indexado en ${elapsedMs}ms y tejido al Khipu`, 'success');
+
+                appendAiMessage(`
+                    <div class="space-y-1.5">
+                        <span class="text-[10px] font-mono text-emerald-400 font-bold uppercase">✓ PDF Anudado en ${elapsedMs}ms</span>
+                        <p>Documento cargado: <strong class="text-white">${escapeHtml(file.name)}</strong> (${totalPages} páginas).</p>
+                        <p class="text-slate-300 text-[11.5px]">Ya tejí una cuerda esmeralda en el Khipu central. Pregúntame cualquier dato, resumen, cláusula o riesgo sobre este PDF.</p>
+                    </div>
+                `);
+            } catch (err) {
+                progWrap.classList.add('hidden');
+                titleEl.textContent = 'Error al leer PDF';
+                subEl.textContent = 'Verifica que el archivo no esté dañado';
+                showToast('No se pudo extraer el PDF', 'error');
+            }
+        }
+
+        function weavePdfCordIntoCase(filename, pages, fullText) {
+            const activeCase = CASES_DATA[currentCaseIndex];
+            let pdfCord = activeCase.cords.find(c => c._isPdf);
+            const cleanShort = filename.replace(/\.pdf$/i, '').slice(0, 18);
+
+            const newKnots = [
+                {
+                    id: "PDF-01",
+                    title: `Ingesta Íntegra: ${filename}`,
+                    title_qu: `PDF Qillqa: ${cleanShort}`,
+                    date: "Indexado hoy",
+                    status: `${pages} PÁG.`,
+                    daysRemaining: null,
+                    critical: false,
+                    articles: ["Auditoría Documental RAG", `${fullText.length.toLocaleString()} caracteres`],
+                    summary: `Extracto inicial: "${fullText.replace(/\s+/g, ' ').slice(0, 220)}..."`,
+                    vulnerability: "Listo para preguntas directas con citas exactas por número de página.",
+                    draftSnippet: `INFORME DE AUDITORÍA LEGAL SOBRE DOCUMENTO: ${filename}\nTotal de páginas verificadas: ${pages}\n\nEXTRACTO RELEVANTE:\n${fullText.slice(0, 500)}...`
+                }
+            ];
+
+            if (!pdfCord) {
+                pdfCord = {
+                    name: `PDF: ${cleanShort}`,
+                    name_qu: `Qillqa: ${cleanShort}`,
+                    color: "#10B981",
+                    _isPdf: true,
+                    knots: newKnots
+                };
+                activeCase.cords.push(pdfCord);
+            } else {
+                pdfCord.name = `PDF: ${cleanShort}`;
+                pdfCord.knots = newKnots;
+            }
+
+            selectedKnot = { cordIdx: activeCase.cords.indexOf(pdfCord), knotIdx: 0 };
+            refreshCaseDashboard();
+        }
+
+        // ============================================================
+        // 6. ULTRA-FAST GEMINI 3 FLASH API + SEARCH GROUNDING
+        // ============================================================
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function formatMarkdownToHtml(md) {
+            let safe = escapeHtml(md);
+            // Code blocks
+            safe = safe.replace(/```([\s\S]*?)```/g, '<pre class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 my-2 overflow-x-auto font-mono text-[11px] text-amber-200">$1</pre>');
+            // Inline code
+            safe = safe.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-slate-950 text-cyber-gold font-mono text-[11px]">$1</code>');
+            // Headings
+            safe = safe.replace(/^### (.*)$/gm, '<h4 class="font-bold text-cyber-gold mt-2 mb-1 text-xs uppercase font-mono">$1</h4>');
+            safe = safe.replace(/^## (.*)$/gm, '<h3 class="font-bold text-white mt-2.5 mb-1 text-xs">$1</h3>');
+            // Bold & Italic
+            safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
+            safe = safe.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // Bullet lists
+            safe = safe.replace(/^\s*[-*]\s+(.*)$/gm, '<div class="flex gap-1.5 items-start my-0.5"><span class="text-cyber-gold">•</span><span>$1</span></div>');
+            // Linebreaks
+            safe = safe.replace(/\n\n/g, '<div class="h-2"></div>').replace(/\n/g, '<br>');
+            return safe;
+        }
+
+        async function callGeminiFlash(userQuery, options = {}) {
+            const effectiveKey = customApiKey || apiKey;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${effectiveKey}`;
+
+            const activeCase = CASES_DATA[currentCaseIndex];
+            const caseBrief = `Expediente activo en pantalla: "${activeCase.title}" (${activeCase.expediente}).`;
+
+            let systemPrompt = `Eres KHIPU JURIS AI, un asistente experto de altísima velocidad especializado en Derecho (peruano, comparado, contrataciones del Estado, procesal civil, penal y administrativo) y también capaz de responder cualquier pregunta general de programación, ciencia, historia o redacción con precisión, concisión y claridad.
+${caseBrief}
+Reglas:
+- Ve directo al grano con estructura clara, viñetas y artículos normativos exactos cuando sea una consulta jurídica.
+- Si el usuario adjuntó un PDF, prioriza el contenido del PDF y cita el número de [PÁGINA X] donde se encuentra el dato. Si no está en el PDF, indícalo en una línea y responde usando tu conocimiento general.`;
+
+            if (currentLang === 'qu') {
+                systemPrompt += `\n- El modo intercultural Runasimi (Quechua sureño/Cusco) está activo: incluye un breve saludo o términos clave en quechua junto con la explicación clara.`;
+            }
+
+            let finalPrompt = userQuery;
+            if (activePdfContext && (activeChatMode === 'pdf' || !options.skipPdf)) {
+                const maxChars = 65000;
+                const docSlice = activePdfContext.text.slice(0, maxChars);
+                finalPrompt = `DOCUMENTO PDF CARGADO ("${activePdfContext.filename}", ${activePdfContext.pageCount} páginas):
+"""
+${docSlice}
+"""
+
+PREGUNTA DEL USUARIO:
+${userQuery}`;
+            }
+
+            // Build multi-turn contents (last 4 turns for speed)
+            const recentTurns = options.isolated ? [] : chatHistoryMemory.slice(-4);
+            const contents = [
+                ...recentTurns,
+                { role: "user", parts: [{ text: finalPrompt }] }
+            ];
+
+            const payload = {
+                contents,
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            if (activeChatMode === 'web' || options.useWebSearch) {
+                payload.tools = [{ "google_search": {} }];
+            }
+
+            let delay = 800;
+            for (let attempt = 0; attempt < 3; attempt++) {
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    const result = await res.json();
+                    const candidate = result.candidates?.[0];
+                    const text = candidate?.content?.parts?.[0]?.text || "No se recibió texto en la respuesta.";
+
+                    let sources = [];
+                    const attributions = candidate?.groundingMetadata?.groundingAttributions;
+                    if (Array.isArray(attributions)) {
+                        sources = attributions
+                            .map(a => ({ uri: a.web?.uri, title: a.web?.title }))
+                            .filter(s => s.uri && s.title)
+                            .slice(0, 4);
+                    }
+
+                    if (!options.isolated) {
+                        chatHistoryMemory.push({ role: "user", parts: [{ text: userQuery }] });
+                        chatHistoryMemory.push({ role: "model", parts: [{ text }] });
+                    }
+                    return { text, sources };
+                }
+
+                if (attempt < 2 && (res.status === 429 || res.status >= 500)) {
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                    continue;
+                }
+
+                const errJson = await res.json().catch(() => ({}));
+                throw new Error(errJson.error?.message || `Error HTTP ${res.status}`);
+            }
+        }
+
+        // ============================================================
+        // 7. CHAT UI & VOICE RECOGNITION
+        // ============================================================
+        function appendUserMessage(text) {
+            const box = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'flex justify-end msg-anim';
+            div.innerHTML = `
+                <div class="bg-gradient-to-br from-amber-500/25 to-cyber-gold/15 border border-cyber-gold/40 text-white px-3.5 py-2.5 rounded-2xl rounded-tr-sm max-w-[85%] text-xs leading-relaxed">
+                    ${escapeHtml(text)}
+                </div>
+            `;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function appendAiMessage(innerHtml) {
+            const box = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2.5 items-start msg-anim';
+            div.innerHTML = `
+                <div class="w-7 h-7 rounded-lg bg-cyber-gold/20 border border-cyber-gold/40 text-cyber-gold flex items-center justify-center font-cinzel font-bold shrink-0">
+                    K
+                </div>
+                <div class="ai-bubble bg-slate-900/90 border border-slate-800 rounded-2xl rounded-tl-sm p-3.5 text-slate-200 leading-relaxed max-w-[92%] text-xs">
+                    ${innerHtml}
+                </div>
+            `;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+            return div;
+        }
+
+        function setChatMode(mode) {
+            activeChatMode = mode;
+            document.querySelectorAll('.chat-mode-btn').forEach(btn => {
+                if (btn.dataset.mode === mode) {
+                    btn.className = 'chat-mode-btn py-1.5 px-2 rounded-lg bg-cyber-gold text-black font-semibold transition truncate';
+                } else {
+                    btn.className = 'chat-mode-btn py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition truncate';
+                }
+            });
+
+            const input = document.getElementById('chat-input');
+            if (mode === 'pdf') {
+                input.placeholder = activePdfContext
+                    ? `Pregunta sobre "${activePdfContext.filename}"...`
+                    : 'Sube un PDF arriba o haz cualquier consulta...';
+            } else if (mode === 'web') {
+                input.placeholder = 'Buscar leyes vigentes, casaciones o noticias en Google...';
+            } else {
+                input.placeholder = 'Pregunta lo que sea a Gemini Flash 3...';
+            }
+        }
+
+        async function handleSendQuery(queryText) {
+            const trimmed = queryText.trim();
+            if (!trimmed) return;
+
+            appendUserMessage(trimmed);
+            const latencyBadge = document.getElementById('latency-badge');
+            const tStart = performance.now();
+            latencyBadge.textContent = 'Procesando...';
+
+            const placeholder = appendAiMessage(`
+                <div class="flex items-center gap-2 font-mono text-[11px] text-cyber-gold">
+                    <span class="w-2 h-2 rounded-full bg-cyber-gold animate-ping"></span>
+                    <span>Tejiendo respuesta con Gemini 3 Flash...</span>
+                </div>
+            `);
+
+            try {
+                const { text, sources } = await callGeminiFlash(trimmed);
+                const secs = ((performance.now() - tStart) / 1000).toFixed(2);
+                latencyBadge.textContent = `⚡ ${secs}s`;
+
+                let sourcesHtml = '';
+                if (sources.length > 0) {
+                    sourcesHtml = `
+                        <div class="mt-3 pt-2 border-t border-slate-800/90 space-y-1">
+                            <span class="text-[10px] font-mono text-cyber-cyan uppercase block">Fuentes Web Verificadas:</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${sources.map(s => `<a href="${escapeHtml(s.uri)}" target="_blank" rel="noopener noreferrer" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950 border border-slate-800 hover:border-cyber-cyan text-cyber-cyan truncate max-w-[200px]">🔗 ${escapeHtml(s.title)}</a>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                placeholder.querySelector('.ai-bubble').innerHTML = `
+                    <div class="space-y-1 text-[12px] text-slate-200">${formatMarkdownToHtml(text)}</div>
+                    ${sourcesHtml}
+                `;
+                const box = document.getElementById('chat-messages');
+                box.scrollTop = box.scrollHeight;
+            } catch (err) {
+                latencyBadge.textContent = 'Error';
+                placeholder.querySelector('.ai-bubble').innerHTML = `
+                    <div class="text-rose-400 font-mono text-[11px] space-y-1">
+                        <p><strong>No se pudo completar la consulta:</strong> ${escapeHtml(err.message)}</p>
+                        <p class="text-slate-400 text-[10px]">Verifica tu conexión o configura una clave propia en el botón superior "Gemini Activo".</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================================
+        // 8. MODALS, DRAFTS & EVENT LISTENERS
+        // ============================================================
+        let currentDraftKnot = null;
+
+        function openDraftModal(knot) {
+            currentDraftKnot = knot;
+            document.getElementById('draft-modal-title').textContent = `Escrito Procesal • ${knot.id}`;
+            document.getElementById('draft-content').value = knot.draftSnippet || '';
+            document.getElementById('draft-modal').classList.remove('hidden');
+        }
+
+        function bindAllEvents() {
+            // Mode buttons
+            document.querySelectorAll('.chat-mode-btn').forEach(btn => {
+                btn.addEventListener('click', () => setChatMode(btn.dataset.mode));
+            });
+
+            // Chat submit
+            document.getElementById('chat-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const input = document.getElementById('chat-input');
+                const val = input.value;
+                input.value = '';
+                handleSendQuery(val);
+            });
+
+            // Quick chips
+            document.querySelectorAll('.quick-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const raw = chip.textContent.replace(/^[^\w¿]+/, '').trim();
+                    handleSendQuery(raw);
+                });
+            });
+
+            // Clear chat
+            document.getElementById('btn-clear-chat').addEventListener('click', () => {
+                chatHistoryMemory = [];
+                document.getElementById('chat-messages').innerHTML = '';
+                appendAiMessage(`<p class="text-slate-300">Memoria de conversación reiniciada. Lista para nuevas consultas.</p>`);
+            });
+
+            // Voice input (Web Speech API)
+            document.getElementById('btn-voice').addEventListener('click', () => {
+                const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRec) {
+                    showToast('Tu navegador no soporta dictado por voz.', 'error');
+                    return;
+                }
+                const rec = new SpeechRec();
+                rec.lang = 'es-PE';
+                const btn = document.getElementById('btn-voice');
+                btn.classList.add('text-rose-400', 'border-rose-500');
+                showToast('Escuchando... habla ahora', 'info');
+                rec.onresult = (ev) => {
+                    const transcript = ev.results[0][0].transcript;
+                    document.getElementById('chat-input').value = transcript;
+                    handleSendQuery(transcript);
+                };
+                rec.onend = () => btn.classList.remove('text-rose-400', 'border-rose-500');
+                rec.start();
+            });
+
+            // PDF Upload & Drag-and-drop
+            const pdfInput = document.getElementById('pdf-file-input');
+            const dropzone = document.getElementById('pdf-dropzone');
+
+            pdfInput.addEventListener('change', (e) => {
+                if (e.target.files[0]) processPdfFile(e.target.files[0]);
+            });
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.classList.add('border-cyber-gold');
+            });
+            dropzone.addEventListener('dragleave', () => dropzone.classList.remove('border-cyber-gold'));
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-cyber-gold');
+                if (e.dataTransfer.files[0]) processPdfFile(e.dataTransfer.files[0]);
+            });
+
+            document.getElementById('btn-remove-pdf').addEventListener('click', (e) => {
+                e.stopPropagation();
+                activePdfContext = null;
+                pdfInput.value = '';
+                document.getElementById('pdf-status-title').textContent = 'Arrastra o sube un PDF aquí';
+                document.getElementById('pdf-status-subtitle').textContent = 'Lectura paralela instantánea en memoria';
+                document.getElementById('btn-remove-pdf').classList.add('hidden');
+                setChatMode('general');
+                showToast('PDF desvinculado de la sesión', 'info');
+            });
+
+            // Case selector & Physics toggle
+            document.getElementById('caseSelector').addEventListener('change', (e) => {
+                currentCaseIndex = parseInt(e.target.value, 10);
+                selectedKnot = { cordIdx: 0, knotIdx: 0 };
+                refreshCaseDashboard();
+            });
+
+            document.getElementById('btn-toggle-breeze').addEventListener('click', () => {
+                breezeActive = !breezeActive;
+                document.getElementById('txt-breeze-status').textContent = breezeActive ? 'Física ON' : 'Física OFF';
+                document.getElementById('breeze-dot').className = breezeActive
+                    ? 'w-2 h-2 rounded-full bg-cyber-gold'
+                    : 'w-2 h-2 rounded-full bg-slate-600';
+                if (!breezeActive) renderKhipuFrame();
+            });
+
+            // Language toggle
+            const btnEs = document.getElementById('btn-lang-es');
+            const btnQu = document.getElementById('btn-lang-qu');
+            btnEs.addEventListener('click', () => {
+                currentLang = 'es';
+                btnEs.className = 'px-2.5 py-1 rounded-lg bg-cyber-gold text-black font-bold transition';
+                btnQu.className = 'px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition';
+                refreshCaseDashboard();
+            });
+            btnQu.addEventListener('click', () => {
+                currentLang = 'qu';
+                btnQu.className = 'px-2.5 py-1 rounded-lg bg-cyber-gold text-black font-bold transition';
+                btnEs.className = 'px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition';
+                refreshCaseDashboard();
+                showToast('Runasimi unanchay kicharisqa (Modo Quechua activo)', 'success');
+            });
+
+            // Audit selected knot with AI
+            document.getElementById('btn-audit-knot-ai').addEventListener('click', () => {
+                const activeCase = CASES_DATA[currentCaseIndex];
+                const knot = activeCase.cords[selectedKnot.cordIdx]?.knots[selectedKnot.knotIdx];
+                if (!knot) return;
+                handleSendQuery(`Analiza estratégicamente el hito "${knot.title}" (${knot.articles.join(', ')}): "${knot.summary}". Dame riesgos procesales y pasos inmediatos.`);
+            });
+
+            // Draft Modal actions
+            document.getElementById('btn-close-draft-modal').addEventListener('click', () => {
+                document.getElementById('draft-modal').classList.add('hidden');
+            });
+
+            document.getElementById('btn-copy-draft').addEventListener('click', () => {
+                const area = document.getElementById('draft-content');
+                area.select();
+                document.execCommand('copy');
+                showToast('Escrito copiado al portapapeles', 'success');
+            });
+
+            document.getElementById('btn-ai-expand-draft').addEventListener('click', async () => {
+                if (!currentDraftKnot) return;
+                const btn = document.getElementById('btn-ai-expand-draft');
+                const area = document.getElementById('draft-content');
+                const prevLabel = btn.innerHTML;
+                btn.innerHTML = '<span>⚡ Redactando con Gemini Flash...</span>';
+                btn.disabled = true;
+
+                try {
+                    const activeCase = CASES_DATA[currentCaseIndex];
+                    const prompt = `Redacta un escrito procesal formal completo conforme a la práctica forense peruana para el expediente ${activeCase.expediente} (${activeCase.title}).
+Acto procesal: "${currentDraftKnot.title}".
+Base normativa: ${currentDraftKnot.articles.join(', ')}.
+Hechos clave: ${currentDraftKnot.summary}.
+Estructura requerida: Expediente, Especialista, Escrito, Sumilla, Destinatario, I. Petitorio, II. Fundamentos de Hecho, III. Fundamentos de Derecho, IV. Medios Probatorios / Anexos y Por Tanto.`;
+
+                    const { text } = await callGeminiFlash(prompt, { isolated: true, skipPdf: false });
+                    area.value = text;
+                    showToast('Escrito jurídico redactado con éxito', 'success');
+                } catch (err) {
+                    showToast('Error al redactar con IA: ' + err.message, 'error');
+                } finally {
+                    btn.innerHTML = prevLabel;
+                    btn.disabled = false;
+                }
+            });
+
+            // Add New Knot Modal
+            const knotModal = document.getElementById('new-knot-modal');
+            document.getElementById('btn-open-new-knot').addEventListener('click', () => {
+                const activeCase = CASES_DATA[currentCaseIndex];
+                const sel = document.getElementById('nk-cord');
+                sel.innerHTML = activeCase.cords.map((c, idx) => `<option value="${idx}" class="bg-slate-900">${c.name}</option>`).join('');
+                knotModal.classList.remove('hidden');
+            });
+            document.getElementById('btn-close-knot-modal').addEventListener('click', () => knotModal.classList.add('hidden'));
+
+            document.getElementById('form-new-knot').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const cIdx = parseInt(document.getElementById('nk-cord').value, 10);
+                const title = document.getElementById('nk-title').value.trim();
+                const art = document.getElementById('nk-art').value.trim() || 'TUO LPAG Ley 27444';
+                const daysRaw = document.getElementById('nk-days').value;
+                const summary = document.getElementById('nk-summary').value.trim();
+                const critical = document.getElementById('nk-critical').checked;
+
+                const cord = CASES_DATA[currentCaseIndex].cords[cIdx];
+                const newId = `K-${(cIdx + 1) * 100 + cord.knots.length + 1}`;
+                cord.knots.push({
+                    id: newId,
+                    title,
+                    title_qu: title,
+                    date: 'Hoy',
+                    status: critical ? 'PLAZO FATAL' : 'REGISTRADO',
+                    daysRemaining: daysRaw !== '' ? parseInt(daysRaw, 10) : null,
+                    critical,
+                    articles: [art],
+                    summary,
+                    vulnerability: critical ? 'Atención prioritaria requerida por vencimiento.' : 'Hito anudado satisfactoriamente en la cuerda.',
+                    draftSnippet: `SUMILLA: ${title.toUpperCase()}\n\nSEÑOR JUEZ / TRIBUNAL:\nAl amparo de ${art}, exponemos:\n\n${summary}`
+                });
+
+                selectedKnot = { cordIdx: cIdx, knotIdx: cord.knots.length - 1 };
+                knotModal.classList.add('hidden');
+                e.target.reset();
+                refreshCaseDashboard();
+                showToast(`Nudo ${newId} tejido en el Khipu`, 'success');
+            });
+
+            // API Key Modal
+            const apiModal = document.getElementById('api-key-modal');
+            document.getElementById('btn-api-key').addEventListener('click', () => {
+                document.getElementById('custom-api-key-input').value = customApiKey;
+                apiModal.classList.remove('hidden');
+            });
+            document.getElementById('btn-close-api-modal').addEventListener('click', () => apiModal.classList.add('hidden'));
+            document.getElementById('btn-save-api-key').addEventListener('click', () => {
+                customApiKey = document.getElementById('custom-api-key-input').value.trim();
+                try { localStorage.setItem('khipu_custom_key', customApiKey); } catch (_) {}
+                document.getElementById('txt-api-status').textContent = customApiKey ? 'Clave Propia' : 'Gemini Activo';
+                apiModal.classList.add('hidden');
+                showToast('Configuración de Gemini guardada', 'success');
+            });
+        }
+
+        // ============================================================
+        // 9. BOOTSTRAP ON WINDOW LOAD
+        // ============================================================
+        window.onload = function () {
+            initCanvas();
+            bindAllEvents();
+            refreshCaseDashboard();
+            animationLoop();
+        };
+    </script>
+</body>
+</html>
